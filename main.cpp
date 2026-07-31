@@ -25,7 +25,6 @@ public:
         cout << "Capacity: " << this->capacity << endl;
         cout << "Performance Score: " << this->perfScore << "\n\n"; 
     }
-
     
 };
 
