@@ -307,6 +307,22 @@ int carNumExists(const vector<unique_ptr<Car>>& garage, int num){
     return 0;
 }
 
+void viewGarage(const vector<unique_ptr<Car>>& garage) {
+    if (garage.empty()) {
+        cout << "The garage is empty\n";
+        return;
+    }
+
+    cout << "\n========== GARAGE INVENTORY ==========\n";
+    for (size_t i = 0; i < garage.size(); ++i) {
+        cout << "\n[ Vehicle #" << (i + 1) << " ]\n";
+        garage[i]->display_info();
+        cout << "\n";
+    }
+    cout << "\nTotal Cars: " << garage.size() << "\n\n";
+}
+
+
 int main(){
     vector<unique_ptr<Car>> garage;
 
@@ -343,6 +359,7 @@ int main(){
             }
             case 2:
                 //View the Garage
+                viewGarage(garage);
                 break;
             case 3:
                 //Tune-Up Car
