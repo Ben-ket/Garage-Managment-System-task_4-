@@ -284,18 +284,74 @@ public:
 }
 };
 
+class AmbulanceCar : public Car{
+private:
+    int medicalSupplies = 0;
+
+public:
+    AmbulanceCar() { type = "AmbulanceCar"; }
+
+    void display_info() override{
+       
+        Car::display_info();
+
+        cout << "Medical Supplies: " << this->medicalSupplies << endl;
+
+    }
+
+    void inputData(const vector<unique_ptr<Car>>& garage) override{
+
+        Car::inputData(garage);
+        
+        do {
+            cout << "Enter Amount of Medical Supplies: ";
+            cin >> medicalSupplies;
+        } while (medicalSupplies <= 0);
+
+
+         this->perfScore = this->speed * 10 + this->capacity * 10;
+
+
+    }
+
+    json jsonConvert() const override{
+        json j  = Car::jsonConvert();
+        j["medicalSupplies"] = medicalSupplies;
+        return j;
+    }
+
+    void fromJson(const json& j) override {
+        Car::fromJson(j);
+        medicalSupplies = j["medicalSupplies"]; 
+    }
+
+    void tuneUp() override {
+    Car::tuneUp();
+
+    do {
+        cout << "Enter New Medical Supplies Amount (Current: " << medicalSupplies << "): ";
+        cin >> medicalSupplies;
+    } while (medicalSupplies <= 0);
+
+    this->perfScore = this->speed * 10 + this->capacity * 10;
+    cout << "\nCar tuned up successfully\n";
+}
+};
+
 unique_ptr<Car> Car::checkIn(const vector<unique_ptr<Car>>& garage){
         string choice;
         unique_ptr<Car> car = nullptr;
 
         while(!car){
-            cout << "Enter Car Type (Racer / Support_Vehicle): ";
+            cout << "Enter Car Type (Racer / Support_Vehicle / AmbulanceCar): ";
             cin >> choice;
 
             if(choice == "Racer") {
                 car = make_unique<Racer>();
             } else if (choice == "Support_Vehicle") {
                 car = make_unique<Support_Vehicle>();
+            } else if (choice == "AmbulanceCar") {
+                car = make_unique<AmbulanceCar>();
             } else {
                 cout << "Invalid Type, Try again\n";
             }
@@ -345,6 +401,8 @@ void loadFromJson(vector<unique_ptr<Car>>& garage, const string& filename = "gar
             car = make_unique<Racer>();
         } else if (carType == "Support_Vehicle") {
             car = make_unique<Support_Vehicle>();
+        } else if (carType == "AmbulanceCar") {
+            car = make_unique<AmbulanceCar>();
         }
 
         if (car) {
