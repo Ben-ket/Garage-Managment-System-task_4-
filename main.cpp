@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <fstream>
+#include <cctype>
 
 #include "json.hpp"
 
@@ -572,7 +573,12 @@ int main(){
                 "Enter Your Choice: ";
         cin >> choice;
 
-        
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(10000, '\n'); 
+            cout << "Invalid input, Please enter a number\n\n";
+            continue; // Restarts the loop
+        }
 
         switch(choice){
             case 1: {
