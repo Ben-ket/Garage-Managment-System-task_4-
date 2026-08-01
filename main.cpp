@@ -64,6 +64,8 @@ public:
             cout << "Enter Capacity: ";
             cin >> capacity;
         } while (capacity <= 0);
+
+
     }
 
     // Constructer
@@ -78,7 +80,7 @@ public:
     }
 
 
-    virtual json jsonConvert() {
+    virtual json jsonConvert() const{
         return json{
             {"carNumber", carNumber},
             {"fullName", fullName},
@@ -91,6 +93,18 @@ public:
         };
     }
 
+    virtual void fromJson(const json& j) {
+        carNumber = j["carNumber"];
+        fullName = j["fullName"];
+        age = j["age"];
+        type = j["type"];
+        racingTeam = j["racingTeam"];
+        speed = j["speed"];
+        capacity = j["capacity"];
+        perfScore = j["perfScore"];
+    }
+
+
 };
 
 class Racer : public Car{
@@ -102,7 +116,7 @@ public:
     Racer() {type = "Racer";}
 
     void display_info() override{
-        this->perfScore = this->speed * 10 + this->capacity;
+        
         Car::display_info();
 
         cout << "Number of Races Completed: " << this->races << endl;
@@ -124,28 +138,37 @@ public:
             cin >> laps;
         } while (laps <= 0);
 
+        this->perfScore = this->speed * 10 + this->capacity;
+
 
     }
 
-    json jsonConvert() override{
+    json jsonConvert() const override{
         json j  = Car::jsonConvert();
         j["races"] = races;
         j["laps"] = laps;
         return j;
     }
 
+    void fromJson(const json& j) override {
+        Car::fromJson(j);
+        races = j["races"];
+        laps = j["laps"];
+    }
+
+
 };
 
 class Support_Vehicle : public Car{
 private:
-    int crew;
-    int reliability;
+    int crew = 0;
+    int reliability = 0;
 
 public:
     Support_Vehicle() { type = "Support_Vehicle"; }
 
     void display_info() override{
-        this->perfScore = this->speed * 5 + this->capacity * 5;
+       
         Car::display_info();
 
         cout << "Crew Size: " << this->crew << endl;
@@ -167,14 +190,22 @@ public:
             cin >> reliability;
         } while (reliability <= 0);
 
+         this->perfScore = this->speed * 5 + this->capacity * 5;
+
 
     }
 
-    json jsonConvert() override{
+    json jsonConvert() const override{
         json j  = Car::jsonConvert();
         j["crew"] = crew;
         j["reliability"] = reliability;
         return j;
+    }
+
+    void fromJson(const json& j) override {
+        Car::fromJson(j);
+        crew = j["crew"];
+        reliability = j["reliability"]; 
     }
 
 };
@@ -217,9 +248,45 @@ void saveToJson(vector<unique_ptr<Car>>& garage, const string& filename = "garag
     }
 }
 
+void loadFromJson(vector<unique_ptr<Car>>& garage, const string& filename = "garage.json") {
+    ifstream inFile(filename);
+    
+    if (!inFile.is_open()) {
+        return;
+    }
+
+    json jsonArray;
+   
+    inFile >> jsonArray;
+    
+    inFile.close();
+
+    garage.clear();
+
+    for (const auto& j : jsonArray) {
+        string carType = j.value("type", "");
+        unique_ptr<Car> car = nullptr;
+
+        if (carType == "Racer") {
+            car = make_unique<Racer>();
+        } else if (carType == "Support_Vehicle") {
+            car = make_unique<Support_Vehicle>();
+        }
+
+        if (car) {
+            car->fromJson(j);
+            garage.push_back(move(car));
+        }
+    }
+
+    cout << "Loaded " << garage.size() << " car from " << filename << "\n";
+}
+
 
 int main(){
     vector<unique_ptr<Car>> garage;
+
+    loadFromJson(garage);
 
     //Main Menu
     int choice = 0;
@@ -252,7 +319,6 @@ int main(){
             }
             case 2:
                 //View the Garage
-                
                 break;
             case 3:
                 //Tune-Up Car
