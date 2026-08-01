@@ -120,6 +120,31 @@ public:
         perfScore = j["perfScore"];
     }
 
+    virtual void tuneUp() {
+        cin.ignore();
+        cout << "Enter New Full Name (Current: " << fullName << "): ";
+        getline(cin, fullName);
+
+        do {
+            cout << "Enter New Age (Current: " << age << "): ";
+            cin >> age;
+        } while (age <= 0);
+
+        cin.ignore();
+        cout << "Enter New Racing Team Name (Current: " << racingTeam << "): ";
+        getline(cin, racingTeam);
+
+        do {
+            cout << "Enter New Speed (Current: " << speed << "): ";
+            cin >> speed;
+        } while (speed <= 0);
+
+        do {
+            cout << "Enter New Capacity (Current: " << capacity << "): ";
+            cin >> capacity;
+        } while (capacity <= 0);
+    }
+
 
 };
 
@@ -172,6 +197,22 @@ public:
         laps = j["laps"];
     }
 
+    void tuneUp() override {
+    Car::tuneUp();
+
+    do {
+        cout << "Enter New Number of Races Completed (Current: " << races << "): ";
+        cin >> races;
+    } while (races <= 0);
+
+    do {
+        cout << "Enter New Laps Completed (Current: " << laps << "): ";
+        cin >> laps;
+    } while (laps <= 0);
+
+    this->perfScore = this->speed * 10 + this->capacity;
+    cout << "\nCar tuned up Successfully\n";
+}
 
 };
 
@@ -224,6 +265,22 @@ public:
         reliability = j["reliability"]; 
     }
 
+    void tuneUp() override {
+    Car::tuneUp();
+
+    do {
+        cout << "Enter New Crew Size (Current: " << crew << "): ";
+        cin >> crew;
+    } while (crew <= 0);
+
+    do {
+        cout << "Enter New Reliability Rating (Current: " << reliability << "): ";
+        cin >> reliability;
+    } while (reliability <= 0);
+
+    this->perfScore = this->speed * 5 + this->capacity * 5;
+    cout << "\nCar tuned up successfully\n";
+}
 };
 
 unique_ptr<Car> Car::checkIn(const vector<unique_ptr<Car>>& garage){
@@ -314,12 +371,42 @@ void viewGarage(const vector<unique_ptr<Car>>& garage) {
     }
 
     cout << "\n========== GARAGE INVENTORY ==========\n";
-    for (size_t i = 0; i < garage.size(); ++i) {
+    for (size_t i = 0; i < garage.size(); i++) {
         cout << "\n[ Vehicle #" << (i + 1) << " ]\n";
         garage[i]->display_info();
         cout << "\n";
     }
-    cout << "\nTotal Cars: " << garage.size() << "\n\n";
+}
+
+void listCarNums(const vector<unique_ptr<Car>>& garage) {
+    cout << "\nList of Car Numbers:\n";
+    for (const auto& car : garage) {
+        cout << "Car #" << car->getCarNum() << "\n";
+    }
+}
+
+void tuneUpCar(vector<unique_ptr<Car>>& garage) {
+    if (garage.empty()) {
+        cout << "\nThe garage is empty\n";
+        return;
+    }
+
+    listCarNums(garage);
+
+    int targetNum;
+    cout << "\nEnter Car Number to Tune-Up: ";
+    cin >> targetNum;
+
+    for (auto& car : garage) {
+        if (car->getCarNum() == targetNum) {
+            cout << "\n--- Editing Car #" << targetNum << " ---\n";
+            car->tuneUp();
+            saveToJson(garage);
+            return;
+        }
+    }
+
+    cout << "\n No Car with number " << targetNum << " was found\n";
 }
 
 
@@ -363,6 +450,7 @@ int main(){
                 break;
             case 3:
                 //Tune-Up Car
+                tuneUpCar(garage);
                 break;
             case 4:
                 //Retire Car
