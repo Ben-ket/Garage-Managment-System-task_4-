@@ -442,6 +442,62 @@ void retireCar(vector<unique_ptr<Car>>& garage) {
     cout << "\n No Car with number " << targetNum << " was found\n";
 }
 
+void findCar(const vector<unique_ptr<Car>>& garage) {
+    if (garage.empty()) {
+        cout << "\nThe garage is empty\n";
+        return;
+    }
+
+    int searchType = 0;
+    cout << "\nSearch Car By:\n";
+    cout << "1- Car Number\n";
+    cout << "2- Full Name\n";
+    cout << "Enter choice: ";
+    cin >> searchType;
+
+    bool found = false;
+
+    if (searchType == 1) {
+        int targetNum;
+        cout << "Enter Car Number: ";
+        cin >> targetNum;
+
+        for (const auto& car : garage) {
+            if (car->getCarNum() == targetNum) {
+                cout << "\nMatching Car Found\n";
+                car->display_info();
+                found = true;
+                break;
+            }
+        }
+    } 
+    else if (searchType == 2) {
+        cin.ignore();
+        string targetName;
+        cout << "Enter Full Name (or part of name): ";
+        getline(cin, targetName);
+
+        cout << "\nSearch Results\n";
+        for (const auto& car : garage) {
+            string carName = car->jsonConvert().value("fullName", "");
+            
+            if (carName.find(targetName) != string::npos) {
+                cout << "\n\n";
+                car->display_info();
+                cout << "\n\n";
+                found = true;
+            }
+        }
+    } 
+    else {
+        cout << "\nInvalid search choice\n";
+        return;
+    }
+
+    if (!found) {
+        cout << "\nNo matching cars found\n";
+    }
+}
 
 int main(){
     vector<unique_ptr<Car>> garage;
@@ -491,6 +547,7 @@ int main(){
                 break;
             case 5:
                 //Find a Car
+                findCar(garage);
                 break;
             case 6:
                 //Garage Report
