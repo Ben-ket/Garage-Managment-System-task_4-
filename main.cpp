@@ -499,6 +499,58 @@ void findCar(const vector<unique_ptr<Car>>& garage) {
     }
 }
 
+struct TeamCount {
+    string teamName;
+    int count = 0;
+};
+
+void garageReport(const vector<unique_ptr<Car>>& garage) {
+    if (garage.empty()) {
+        cout << "\nThe garage is empty\n";
+        return;
+    }
+
+    int totalCars = garage.size();
+    double totalPerfScore = 0.0;
+    vector<TeamCount> teams;
+
+    for (const auto& car : garage) {
+        json j = car->jsonConvert();
+
+        totalPerfScore += j.value("perfScore", 0.0);
+
+        string team = j.value("racingTeam", "Unassigned");
+        if (team.empty()) team = "Unassigned";
+
+
+        bool found = false;
+        for (auto& tc : teams) {
+            if (tc.teamName == team) {
+                tc.count++;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            teams.push_back({team, 1});
+        }
+    }
+
+    double avgPerfScore = totalPerfScore / (double) totalCars;
+
+  
+    cout << "\n             GARAGE REPORT               \n";
+    cout << "Total Cars Checked In: " << totalCars << "\n";
+    cout << "Average Performance Score: " << avgPerfScore << "\n\n";
+
+    cout << "Cars Per Racing Team\n";
+  
+    for (const auto& tc : teams) {
+        cout << "  - " << tc.teamName << ": " << tc.count << " car(s)\n";
+    }
+    cout << "\n\n";
+}
+
 int main(){
     vector<unique_ptr<Car>> garage;
 
@@ -551,6 +603,7 @@ int main(){
                 break;
             case 6:
                 //Garage Report
+                garageReport(garage);
                 break;
             case 7:
                 //Quit
