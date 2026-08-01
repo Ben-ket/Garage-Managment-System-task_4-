@@ -409,6 +409,39 @@ void tuneUpCar(vector<unique_ptr<Car>>& garage) {
     cout << "\n No Car with number " << targetNum << " was found\n";
 }
 
+void retireCar(vector<unique_ptr<Car>>& garage) {
+    if (garage.empty()) {
+        cout << "\nThe garage is empty\n";
+        return;
+    }
+
+    listCarNums(garage);
+
+    int targetNum;
+    cout << "Enter Car Number to Retire: ";
+    cin >> targetNum;
+
+    for (auto it = garage.begin(); it != garage.end(); ++it) {
+        if ((*it)->getCarNum() == targetNum) {
+            
+            char confirm;
+            cout << "\nConfiramtion to retire Car #" << targetNum << "? (y/n): ";
+            cin >> confirm;
+
+            if (tolower(confirm) == 'y') {
+                garage.erase(it);
+                saveToJson(garage);
+                cout << "\nCar #" << targetNum << " has been retired successfully.\n";
+            } else {
+                cout << "\nRetiring Cancelled\n";
+            }
+            return;
+        }
+    }
+
+    cout << "\n No Car with number " << targetNum << " was found\n";
+}
+
 
 int main(){
     vector<unique_ptr<Car>> garage;
@@ -454,6 +487,7 @@ int main(){
                 break;
             case 4:
                 //Retire Car
+                retireCar(garage);
                 break;
             case 5:
                 //Find a Car
@@ -470,8 +504,6 @@ int main(){
                 break;
         }
     }
-    
-    
 
     return 0;
 }
