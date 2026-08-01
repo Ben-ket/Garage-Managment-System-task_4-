@@ -9,6 +9,9 @@
 using namespace std;
 using json = nlohmann::json;
 
+class Car;
+int carNumExists(const vector<unique_ptr<Car>>& garage, int num);
+
 class Car{
 protected:
     int carNumber = 0;
@@ -25,7 +28,8 @@ public:
 
     Car() = default;
 
-    static unique_ptr<Car> checkIn();
+    static unique_ptr<Car> checkIn(const vector<unique_ptr<Car>>& garage);
+    
 
     virtual void display_info(){
         cout << "Car Number: " << this->carNumber << endl;
@@ -38,9 +42,20 @@ public:
         cout << "Performance Score: " << this->perfScore << endl; 
     }
     
-    virtual void inputData() {
-        cout << "Enter Unique Car Number: ";
-        cin >> carNumber;
+    virtual void inputData(const vector<unique_ptr<Car>>& garage) {
+        int unique  = 0;
+        do{
+        
+            cout << "Enter Unique Car Number: ";
+            cin >> carNumber;
+
+            if(carNumExists(garage, carNumber)){
+                cout << "Car Number alraedy exist, try Another\n";
+            }else{
+                unique = 1;
+            }
+
+        }while(!unique);
         
         cin.ignore();
         cout << "Enter Car Full Name: ";
@@ -79,6 +94,7 @@ public:
         this->capacity = capacity;
     }
 
+    int getCarNum() const { return carNumber; };
 
     virtual json jsonConvert() const{
         return json{
@@ -124,9 +140,9 @@ public:
 
     }
 
-    void inputData() override{
+    void inputData(const vector<unique_ptr<Car>>& garage) override{
 
-        Car::inputData();
+        Car::inputData(garage);
         
         do {
             cout << "Enter Number of Races Completed: ";
@@ -176,9 +192,9 @@ public:
 
     }
 
-    void inputData() override{
+    void inputData(const vector<unique_ptr<Car>>& garage) override{
 
-        Car::inputData();
+        Car::inputData(garage);
         
         do {
             cout << "Enter Crew Size: ";
@@ -210,7 +226,7 @@ public:
 
 };
 
-unique_ptr<Car> Car::checkIn(){
+unique_ptr<Car> Car::checkIn(const vector<unique_ptr<Car>>& garage){
         string choice;
         unique_ptr<Car> car = nullptr;
 
@@ -227,7 +243,7 @@ unique_ptr<Car> Car::checkIn(){
             }
         }
 
-        car->inputData();
+        car->inputData(garage);
 
         return car;
     }
@@ -282,6 +298,14 @@ void loadFromJson(vector<unique_ptr<Car>>& garage, const string& filename = "gar
     cout << "Loaded " << garage.size() << " car from " << filename << "\n";
 }
 
+int carNumExists(const vector<unique_ptr<Car>>& garage, int num){
+    for (const auto& car : garage) {
+        if (car->getCarNum() == num) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int main(){
     vector<unique_ptr<Car>> garage;
@@ -309,7 +333,7 @@ int main(){
         switch(choice){
             case 1: {
                 //Check in car
-                unique_ptr<Car> car = Car::checkIn();
+                unique_ptr<Car> car = Car::checkIn(garage);
                 garage.push_back(move(car));
 
                 saveToJson(garage);
