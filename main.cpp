@@ -2,10 +2,12 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <fstream>
 
-// #include "json.hpp"
+#include "json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
 class Car{
 protected:
@@ -15,7 +17,7 @@ protected:
     string type;
     string racingTeam;
     double speed = 0.0;
-    double capacity = 0.0;
+    int capacity = 0;
     double perfScore = 0.0;
 public:
 
@@ -75,6 +77,20 @@ public:
         this->capacity = capacity;
     }
 
+
+    virtual json jsonConvert() {
+        return json{
+            {"carNumber", carNumber},
+            {"fullName", fullName},
+            {"age", age},
+            {"type", type},
+            {"racingTeam", racingTeam},
+            {"speed", speed},
+            {"capacity", capacity},
+            {"perfScore", perfScore}
+        };
+    }
+
 };
 
 class Racer : public Car{
@@ -85,7 +101,7 @@ private:
 public:
     Racer() {type = "Racer";}
 
-     void display_info() override{
+    void display_info() override{
         this->perfScore = this->speed * 10 + this->capacity;
         Car::display_info();
 
@@ -110,6 +126,14 @@ public:
 
 
     }
+
+    json jsonConvert() override{
+        json j  = Car::jsonConvert();
+        j["races"] = races;
+        j["laps"] = laps;
+        return j;
+    }
+
 };
 
 class Support_Vehicle : public Car{
@@ -146,6 +170,12 @@ public:
 
     }
 
+    json jsonConvert() override{
+        json j  = Car::jsonConvert();
+        j["crew"] = crew;
+        j["reliability"] = reliability;
+        return j;
+    }
 
 };
 
@@ -171,8 +201,26 @@ unique_ptr<Car> Car::checkIn(){
         return car;
     }
 
+void saveToJson(vector<unique_ptr<Car>>& garage, const string& filename = "garage.json") {
+    json jsonArray = json::array();
+
+    for (const auto& car : garage) {
+        jsonArray.push_back(car->jsonConvert());
+    }
+
+    ofstream outFile(filename);
+    if (outFile.is_open()) {
+        outFile << jsonArray.dump(4);
+        cout << "\nSuccessfully Garage saved to " << filename << endl;
+    } else {
+        cerr << "\n Error" << endl;
+    }
+}
+
 
 int main(){
+    vector<unique_ptr<Car>> garage;
+
     //Main Menu
     int choice = 0;
 
@@ -195,9 +243,11 @@ int main(){
             case 1: {
                 //Check in car
                 unique_ptr<Car> car = Car::checkIn();
+                garage.push_back(move(car));
+
+                saveToJson(garage);
 
                 cout << "\nCar Checked In Successfully!\n";
-
                 break;
             }
             case 2:
